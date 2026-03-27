@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lyra's AI-Powered Detroit Adventure</title>
+    <title>Lyra's 2026 Adventure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Pacifico&display=swap');
         
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: #f0f4f8;
+        body, html {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #1a202c;
             overflow: hidden;
         }
 
@@ -24,45 +26,66 @@
             height: 100%;
             display: none;
             opacity: 0;
-            transition: opacity 0.4s ease-in-out;
-            overflow-y: auto;
+            transition: opacity 0.6s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
-            box-sizing: border-box;
-            background-size: cover;
-            background-position: center;
+            color: white;
+            z-index: 1;
         }
 
         .slide.active {
             display: flex;
             opacity: 1;
+            z-index: 10;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            color: #1a202c;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
         .fun-font {
             font-family: 'Pacifico', cursive;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            width: 100%;
-            max-width: 1000px;
+        .nav-button {
+            background: #2563eb;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-hover:hover {
-            transform: scale(1.05);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .nav-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            background: #1d4ed8;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
         }
 
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             animation: spin 1s linear infinite;
             display: inline-block;
         }
@@ -72,10 +95,9 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Fixed Navigation */
-        .nav-controls {
+        .controls-container {
             position: fixed;
-            bottom: 2rem;
+            bottom: 40px;
             left: 0;
             right: 0;
             z-index: 100;
@@ -84,85 +106,89 @@
             align-items: center;
             pointer-events: none;
         }
-        
-        .nav-controls button {
+
+        .controls-container button {
             pointer-events: auto;
+        }
+        
+        .ai-btn {
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .ai-btn:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="bg-blue-50 h-screen w-screen">
+<body>
 
-    <!-- Settings Button (Top Left) -->
-    <div class="fixed top-6 left-6 z-[110]">
-        <button onclick="toggleSettings()" class="bg-white/80 hover:bg-white p-3 rounded-full shadow-lg border border-gray-200 transition-all">
-            ⚙️
-        </button>
-    </div>
+    <!-- Settings Gear -->
+    <button onclick="toggleSettings()" style="position:fixed; top:25px; left:25px; z-index:110; font-size: 24px; background:rgba(255,255,255,0.4); border-radius:50%; width:50px; height:50px; border:2px solid white; cursor:pointer; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">⚙️</button>
 
-    <!-- API Key Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 z-[140] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="glass max-w-md rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-2xl font-bold mb-4">Settings</h2>
-            <p class="text-sm text-gray-600 mb-4">Inside the chat, AI features work automatically. In a live browser, you need to add your own Gemini API key to use the "Magic Detailer".</p>
-            <input id="user-api-key" type="password" placeholder="Enter Gemini API Key..." class="w-full p-3 rounded-xl border border-gray-200 mb-4 focus:ring-2 focus:ring-blue-400 outline-none">
-            <div class="flex justify-end space-x-2">
-                <button onclick="toggleSettings()" class="px-4 py-2 text-gray-500 font-bold">Cancel</button>
-                <button onclick="saveApiKey()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">Save Key</button>
+    <!-- API Key Modal -->
+    <div id="settings-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:200; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(10px);">
+        <div style="background:white; padding:40px; border-radius:30px; max-width:450px; width:100%; box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
+            <h2 style="font-weight:900; font-size: 26px; margin-bottom:15px; color: #1a202c;">AI Magic Settings</h2>
+            <p style="font-size:16px; color:#4a5568; margin-bottom:25px; line-height: 1.6;">To use the "Magic Detailer" in your browser, enter your free Gemini API key below:</p>
+            <input id="user-api-key" type="password" placeholder="Enter API Key..." style="width:100%; padding:15px; border:2px solid #edf2f7; border-radius:15px; margin-bottom:25px; font-size: 16px; outline: none; transition: border-color 0.2s;">
+            <div style="display:flex; justify-content:flex-end; gap:15px;">
+                <button onclick="toggleSettings()" style="color:#718096; font-weight:bold; cursor: pointer; background: none; border: none;">Close</button>
+                <button onclick="saveApiKey()" style="background:#2563eb; color:white; padding:15px 30px; border-radius:15px; font-weight:bold; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);">Save Key</button>
             </div>
         </div>
     </div>
 
-    <!-- Main Presentation Container -->
-    <div id="slides-container" class="relative w-full h-full">
-        <!-- Slides will be injected here -->
-    </div>
-
-    <!-- Navigation Control -->
-    <div class="nav-controls">
-        <div id="slide-indicator" class="mb-3 bg-white/90 px-4 py-1 rounded-full text-xs font-bold text-gray-500 shadow-sm border border-white">
-            Loading Adventure...
-        </div>
-        <div class="flex space-x-4">
-            <button onclick="prevSlide()" class="bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg btn-hover font-bold border-2 border-blue-400 transition-all active:scale-95">← Back</button>
-            <button onclick="nextSlide()" class="bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg btn-hover font-bold border-2 border-blue-400 transition-all active:scale-95">Next Day →</button>
-        </div>
-    </div>
-
-    <!-- AI Result Modal -->
-    <div id="ai-response-modal" class="fixed inset-0 z-[130] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="glass max-w-2xl rounded-3xl p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="ai-title" class="text-3xl font-black text-indigo-800">✨ AI Insight</h3>
-                <button onclick="closeAIResponse()" class="text-gray-400 hover:text-black text-2xl font-bold">✕</button>
+    <!-- Slides Container -->
+    <div id="slides-container" style="width:100%; height:100%;">
+        <!-- Intro Slide (Slide 0) - NEW YOUTHFUL ACTIVE IMAGE -->
+        <div id="slide-0" class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1547447134-cd3f5c716030?auto=format&fit=crop&q=80&w=1200');">
+            <div style="text-align: center; padding: 20px;">
+                <h1 class="text-8xl fun-font mb-6" style="text-shadow: 4px 4px 20px rgba(0,0,0,0.7);">Hi Lyra!</h1>
+                <p class="text-4xl font-black mb-12" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5); letter-spacing: 1px;">Ready for your 2026 Adventure?</p>
+                <div style="background:rgba(255,255,255,0.25); padding:30px 60px; border-radius:3rem; backdrop-filter:blur(12px); border: 2px solid rgba(255,255,255,0.4); display:inline-flex; gap:50px; box-shadow: 0 15px 30px rgba(0,0,0,0.2);">
+                    <div style="text-align:center;">🏙️<br><span style="font-size:14px; font-weight:900; letter-spacing:2px; opacity: 0.95;">DETROIT</span></div>
+                    <div style="text-align:center;">🌉<br><span style="font-size:14px; font-weight:900; letter-spacing:2px; opacity: 0.95;">WINDSOR</span></div>
+                    <div style="text-align:center;">🥞<br><span style="font-size:14px; font-weight:900; letter-spacing:2px; opacity: 0.95;">100% GF</span></div>
+                </div>
             </div>
-            <div id="ai-content" class="text-lg text-gray-700 leading-relaxed"></div>
-            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
-                <button onclick="closeAIResponse()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Navigation Overlay -->
+    <div class="controls-container">
+        <div id="slide-indicator" style="background:rgba(255,255,255,1); color:#2d3748; font-size:14px; font-weight:900; padding:8px 20px; border-radius:30px; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); border: 2px solid #edf2f7;">Slide 1 of 10</div>
+        <div style="display:flex; gap:25px;">
+            <button class="nav-button" onclick="prevSlide()" style="background: #4a5568;">← Back</button>
+            <button class="nav-button" onclick="nextSlide()">Next Day →</button>
+        </div>
+    </div>
+
+    <!-- AI Info Modal -->
+    <div id="ai-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:300; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(8px);">
+        <div class="glass" style="max-width:650px; padding: 3.5rem; border-radius: 3rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h3 id="ai-title" style="font-size:32px; font-weight:900; color:#2563eb; letter-spacing: -1px;">✨ AI Insight</h3>
+                <button onclick="closeAIModal()" style="font-size:36px; color:#cbd5e0; border:none; background:none; cursor:pointer;">✕</button>
+            </div>
+            <div id="ai-content" style="line-height:1.8; font-size:20px; color:#2d3748; font-weight: 500;"></div>
+            <div style="margin-top:45px; display:flex; justify-content:flex-end;">
+                <button onclick="closeAIModal()" style="background:#2563eb; color:white; padding:16px 45px; border-radius:20px; font-weight:900; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);">Awesome!</button>
             </div>
         </div>
     </div>
 
     <script>
-        // API key handling: use provided key or check local storage
-        let apiKey = "" || localStorage.getItem('lyra_trip_api_key');
-        
-        const themeMap = {
-            indigo: { border: 'border-indigo-600', text: 'text-indigo-600', bg: 'bg-indigo-50' },
-            orange: { border: 'border-orange-600', text: 'text-orange-600', bg: 'bg-orange-50' },
-            teal: { border: 'border-teal-600', text: 'text-teal-600', bg: 'bg-teal-50' },
-            pink: { border: 'border-pink-600', text: 'text-pink-600', bg: 'bg-pink-50' },
-            red: { border: 'border-red-600', text: 'text-red-600', bg: 'bg-red-50' },
-            cyan: { border: 'border-cyan-600', text: 'text-cyan-600', bg: 'bg-cyan-50' },
-            yellow: { border: 'border-yellow-600', text: 'text-yellow-600', bg: 'bg-yellow-50' },
-            blue: { border: 'border-blue-600', text: 'text-blue-600', bg: 'bg-blue-50' }
-        };
+        let apiKey = localStorage.getItem('lyra_trip_key') || "";
 
         const tripData = [
             {
                 date: "Thursday, April 2",
-                title: "Detroit Vertical & Victory",
+                title: "Vertical & Victory",
                 bg: "https://images.unsplash.com/photo-1569331527318-912c324df1bc?auto=format&fit=crop&q=80&w=1200",
-                theme: "indigo",
+                theme: "#4f46e5",
                 activities: ["🕒 9:00 AM: DYNO Detroit Climbing", "🕒 4:00 PM: The Yard at Corktown", "🕒 7:00 PM: Pistons vs Timberwolves"],
                 gf: "Breakfast: Seven Elements | Lunch: Breadless | Dinner: Mercury Burger"
             },
@@ -170,7 +196,7 @@
                 date: "Friday, April 3",
                 title: "Opening Day Buzz",
                 bg: "https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&q=80&w=1200",
-                theme: "orange",
+                theme: "#ea580c",
                 activities: ["🕒 1:10 PM: Tigers Opening Day vs. Cardinals", "🕒 Post-Game: Friday Night Fireworks!"],
                 gf: "Breakfast: Hudson Cafe | Lunch: JoJo’s ShakeBAR | Dinner: Union Assembly"
             },
@@ -178,39 +204,39 @@
                 date: "Saturday, April 4",
                 title: "Windsor Wave & Win",
                 bg: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&q=80&w=1200",
-                theme: "teal",
-                activities: ["🕒 10:00 AM: Adventure Bay Water Park", "🕒 3:00 PM: Big Time Entertainment (Karts & Laser Tag)"],
+                theme: "#0d9488",
+                activities: ["🕒 10:00 AM: Adventure Bay Water Park", "🕒 3:00 PM: Big Time Entertainment (Windsor)"],
                 gf: "Breakfast: Germack Roasting | Lunch: Supino Pizzeria | Dinner: Big Time Eats"
             },
             {
                 date: "Sunday, April 5",
                 title: "Easter Bunny Hop",
                 bg: "https://images.unsplash.com/photo-1522336572018-ed994602f30b?auto=format&fit=crop&q=80&w=1200",
-                theme: "pink",
-                activities: ["🕒 11:00 AM: Easter Brunch @ JoJo's", "🕒 7:20 PM: Tigers Kids Day (Ferris Wheel)"],
+                theme: "#db2777",
+                activities: ["🕒 11:00 AM: Easter Brunch @ JoJo's", "🕒 7:20 PM: Tigers Kids Day"],
                 gf: "Brunch: JoJo's | Lunch: Anna's House | Dinner: Comerica Park GF Stand"
             },
             {
                 date: "Monday, April 6",
-                title: "Gravity & Cinema",
-                bg: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=1200",
-                theme: "indigo",
-                activities: ["🕒 1:00 PM: Slick City Action Park", "🕒 6:30 PM: 'Hoppers' Movie @ Emagine"],
+                title: "Jump & Cinema",
+                bg: "https://images.unsplash.com/photo-1536766768598-e092d3fdcf22?auto=format&fit=crop&q=80&w=1200",
+                theme: "#4f46e5",
+                activities: ["🕒 1:00 PM: Launch Trampoline Park (Troy)", "🕒 6:30 PM: 'Hoppers' Movie @ Emagine"],
                 gf: "Breakfast: Toasted Oak | Lunch: Playa Bowls | Dinner: Condado Tacos"
             },
             {
                 date: "Tuesday, April 7",
                 title: "The Big Bargain Day",
                 bg: "https://images.unsplash.com/photo-1559599101-f09722fb4948?auto=format&fit=crop&q=80&w=1200",
-                theme: "red",
-                activities: ["🕒 1:00 PM: $5 Movie Matinee", "🕒 6:40 PM: 313 Value Game (Tigers)"],
+                theme: "#dc2626",
+                activities: ["🕒 1:00 PM: \$5 Movie Matinee", "🕒 6:40 PM: 313 Value Game (Tigers)"],
                 gf: "Breakfast: First Watch | Lunch: Shake Shack (GF) | Dinner: Value Hot Dogs"
             },
             {
                 date: "Wednesday, April 8",
                 title: "Creative Competition",
                 bg: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200",
-                theme: "cyan",
+                theme: "#0891b2",
                 activities: ["🕒 10:00 AM: 2D DIY Studio", "🕒 3:00 PM: Pickleball @ SPARC Novi"],
                 gf: "Breakfast: Anna's House | Lunch: Playa Bowls | Dinner: Merri Bowl"
             },
@@ -218,7 +244,7 @@
                 date: "Thursday, April 9",
                 title: "Style & Strike",
                 bg: "https://images.unsplash.com/photo-1519340333755-968054813588?auto=format&fit=crop&q=80&w=1200",
-                theme: "yellow",
+                theme: "#ca8a04",
                 activities: ["🕒 1:00 PM: Somerset Collection Shopping", "🕒 7:00 PM: Night Strike @ Merri Bowl"],
                 gf: "Breakfast: Thyme Kitchen | Lunch: The Loose Goose | Dinner: Union Assembly"
             },
@@ -226,7 +252,7 @@
                 date: "Friday, April 10",
                 title: "Underwater Finale",
                 bg: "https://images.unsplash.com/photo-1540331547168-8b63109225b7?auto=format&fit=crop&q=80&w=1200",
-                theme: "blue",
+                theme: "#2563eb",
                 activities: ["🕒 10:00 AM: SEA LIFE Aquarium", "🕒 6:45 PM: Party in the Park + Fireworks"],
                 gf: "Breakfast: Rainforest Cafe | Lunch: Rise Pies | Dinner: Union Assembly"
             }
@@ -237,172 +263,130 @@
 
         function initSlides() {
             const container = document.getElementById('slides-container');
-            
-            // Intro Slide with ICONIC Detroit Skyline Background (Verified RenCen view)
-            const intro = document.createElement('div');
-            intro.id = 'slide-0';
-            intro.className = 'slide active text-white text-center';
-            // Using a verified Detroit skyline ID: photo-1555448248-2571daf6344b
-            intro.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1555448248-2571daf6344b?auto=format&fit=crop&q=80&w=1200')`;
-            intro.innerHTML = `
-                <div class="max-w-4xl px-6">
-                    <h1 class="text-7xl fun-font mb-6 drop-shadow-xl text-white">Hi Lyra!</h1>
-                    <p class="text-3xl mb-10 font-light opacity-90 text-white">Your Detroit & Windsor 2026 Adventure</p>
-                    <div class="flex flex-col items-center space-y-8">
-                        <div class="flex justify-center space-x-12 text-2xl font-bold bg-white/10 p-6 rounded-3xl backdrop-blur-md">
-                            <div class="flex flex-col text-white"><span>🏙️</span><span class="text-xs mt-1 uppercase tracking-widest">Detroit</span></div>
-                            <div class="flex flex-col text-white"><span>🌉</span><span class="text-xs mt-1 uppercase tracking-widest">Windsor</span></div>
-                            <div class="flex flex-col text-white"><span>🍕</span><span class="text-xs mt-1 uppercase tracking-widest">100% GF</span></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(intro);
-
-            // Daily Slides
             tripData.forEach((day, i) => {
-                const colors = themeMap[day.theme] || themeMap.indigo;
-                const slide = document.createElement('div');
-                slide.id = `slide-${i + 1}`;
-                slide.className = 'slide';
-                slide.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${day.bg}')`;
+                const div = document.createElement('div');
+                div.id = `slide-${i + 1}`;
+                div.className = 'slide';
+                div.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${day.bg}')`;
                 
-                slide.innerHTML = `
-                    <div class="glass rounded-3xl p-8 md:p-12 shadow-2xl border-l-[12px] ${colors.border}">
-                        <div class="flex justify-between items-start mb-6">
+                div.innerHTML = `
+                    <div class="glass" style="border-left: 20px solid ${day.theme};">
+                        <h2 style="color:${day.theme}; font-weight:900; font-size:20px; text-transform:uppercase; letter-spacing:3px; margin-bottom:10px;">${day.date}</h2>
+                        <h1 style="font-size:52px; font-weight:900; margin-bottom:35px; line-height:1; letter-spacing: -2px; color: #1a202c;">${day.title}</h1>
+                        <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:40px;">
                             <div>
-                                <h2 class="font-black uppercase tracking-widest ${colors.text} text-xl">${day.date}</h2>
-                                <h1 class="text-4xl md:text-6xl font-black text-gray-900">${day.title}</h1>
-                            </div>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-10">
-                            <div>
-                                <div class="flex items-center justify-between mb-5">
-                                    <h3 class="text-2xl font-bold text-gray-800">The Action Plan</h3>
-                                    <button onclick="getMagicDetail(${i})" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-all">✨ Magic Detailer</button>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                    <h3 style="font-size:24px; font-weight:900; color: #2d3748;">Today's Action</h3>
+                                    <button class="ai-btn" onclick="getMagic(${i})" style="font-size:13px; background:#eef2ff; color:#4f46e5; padding:8px 18px; border-radius:20px; font-weight:800; border: 2px solid #c7d2fe;">✨ MAGIC DETAIL</button>
                                 </div>
-                                <ul class="space-y-4">
-                                    ${day.activities.map(act => `<li class="flex items-center text-lg text-gray-700 font-medium"><span class="w-2 h-2 rounded-full mr-3" style="background-color: currentColor"></span>${act}</li>`).join('')}
+                                <ul style="list-style:none; padding:0; margin:0;">
+                                    ${day.activities.map(a => `<li style="padding-bottom:18px; font-weight:700; font-size:18px; display:flex; align-items:center; color: #4a5568;"><span style="width:10px; height:10px; background:${day.theme}; border-radius:50%; display:inline-block; margin-right:15px; flex-shrink:0;"></span>${a}</li>`).join('')}
                                 </ul>
                             </div>
-                            <div class="p-8 rounded-3xl border ${colors.bg}" style="border-width: 1px; border-color: rgba(0,0,0,0.05)">
-                                <div class="flex items-center justify-between mb-5">
-                                    <h3 class="text-2xl font-bold text-gray-800">GF Fuel</h3>
-                                    <button onclick="getMealRec(${i})" class="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200 hover:bg-green-100 transition-all">✨ Menu Scout</button>
+                            <div style="background:#f8fafc; padding:30px; border-radius:2rem; border: 2px solid #edf2f7; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                    <h3 style="font-size:24px; font-weight:900; color: #2d3748;">GF Fuel</h3>
+                                    <button class="ai-btn" onclick="getFood(${i})" style="font-size:13px; background:#f0fdf4; color:#166534; padding:8px 18px; border-radius:20px; font-weight:800; border: 2px solid #bbf7d0;">🍕 MENU SCOUT</button>
                                 </div>
-                                <p class="text-xl text-gray-700 leading-relaxed font-semibold italic">"${day.gf}"</p>
+                                <p style="font-size:19px; color:#4a5568; font-weight:600; font-style:italic; line-height: 1.6;">"${day.gf}"</p>
                             </div>
                         </div>
                     </div>
                 `;
-                container.appendChild(slide);
+                container.appendChild(div);
             });
-            updateIndicator();
+            updateUI();
         }
 
-        function showSlide(index) {
-            if (index < 0) index = totalSlides - 1;
-            if (index >= totalSlides) index = 0;
-
-            const allSlides = document.querySelectorAll('.slide');
-            allSlides.forEach(s => s.classList.remove('active'));
+        function showSlide(idx) {
+            if (idx < 0) idx = totalSlides - 1;
+            if (idx >= totalSlides) idx = 0;
             
-            const target = document.getElementById(`slide-${index}`);
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(`slide-${idx}`);
             if (target) {
                 target.classList.add('active');
-                currentSlide = index;
-                updateIndicator();
+                currentSlide = idx;
+                updateUI();
             }
         }
 
         function nextSlide() { showSlide(currentSlide + 1); }
         function prevSlide() { showSlide(currentSlide - 1); }
 
-        function updateIndicator() {
-            const indicator = document.getElementById('slide-indicator');
-            if (indicator) {
-                indicator.innerText = `Slide ${currentSlide + 1} of ${totalSlides}`;
-            }
+        function updateUI() {
+            document.getElementById('slide-indicator').innerText = `Slide ${currentSlide + 1} of ${totalSlides}`;
         }
 
-        // --- GEMINI POWER ---
+        // AI LOGIC
+        async function callGemini(prompt) {
+            const key = apiKey || localStorage.getItem('lyra_trip_key');
+            if (!key) return "Please click the ⚙️ icon to add your free Gemini API key first!";
 
-        async function callGemini(prompt, system) {
-            // Priority: internal platform key -> manual key in code -> local storage key
-            const finalKey = apiKey || localStorage.getItem('lyra_trip_api_key');
-            
-            if (!finalKey) {
-                return "Lyra, to use this feature outside the chat, please click the ⚙️ gear icon and enter an API key!";
-            }
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: system || "Expert guide for a 11-year-old traveler named Lyra." }] }
+                systemInstruction: { parts: [{ text: "You are a fun, enthusiastic travel expert for an 11-year-old girl named Lyra. Keep details exciting, detailed, and brief. Use emojis!" }] }
             };
 
-            let delay = 1000;
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, { 
-                        method: 'POST', 
-                        body: JSON.stringify(payload), 
-                        headers: { 'Content-Type': 'application/json' } 
-                    });
-                    
-                    if (!response.ok) throw new Error("API Request Failed");
-
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Oops, I couldn't find that detail.";
-                } catch (e) { 
-                    if (i === 4) return "Connection error. Please check your API key and internet!";
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                }
-            }
+            try {
+                const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Oops, Lyra! I couldn't find that detail.";
+            } catch (e) { return "Connection error! Check your API key and internet."; }
         }
 
-        async function getMagicDetail(idx) {
-            const modal = document.getElementById('ai-response-modal');
+        async function getMagic(idx) {
+            const modal = document.getElementById('ai-modal');
             const content = document.getElementById('ai-content');
             document.getElementById('ai-title').innerText = "✨ Magic Detail Finder";
-            content.innerHTML = `<div class="p-10 text-center"><div class="loader"></div><p class="mt-4 font-bold text-indigo-600">Digging for hidden gems...</p></div>`;
-            modal.classList.remove('hidden');
-
-            const result = await callGemini(`Give me one cool secret for Lyra (age 11) about these: ${tripData[idx].activities.join(', ')}.`, "Fun, high-energy travel expert.");
-            content.innerHTML = `<div class="bg-indigo-50 p-6 rounded-2xl border-2 border-indigo-100 text-xl font-medium text-gray-800">${result}</div>`;
+            content.innerHTML = `<div style="text-align:center; padding:40px;"><div class="loader"></div><p style="margin-top:20px; font-weight:900; color: #4a5568; font-size: 20px;">Finding secrets for Lyra...</p></div>`;
+            modal.style.display = 'flex';
+            
+            const result = await callGemini(`Tell Lyra (age 11) one really cool secret or hidden fun detail about these specific activities: ${tripData[idx].activities.join(', ')}.`);
+            content.innerHTML = `<p>${result}</p>`;
         }
 
-        async function getMealRec(idx) {
-            const modal = document.getElementById('ai-response-modal');
+        async function getFood(idx) {
+            const modal = document.getElementById('ai-modal');
             const content = document.getElementById('ai-content');
             document.getElementById('ai-title').innerText = "🍕 GF Menu Scout";
-            content.innerHTML = `<div class="p-10 text-center"><div class="loader"></div><p class="mt-4 font-bold text-green-600">Finding GF yummy things...</p></div>`;
-            modal.classList.remove('hidden');
-
-            const result = await callGemini(`Best GF dish at: ${tripData[idx].gf} for Lyra.`, "Gluten-Free foodie expert.");
-            content.innerHTML = `<div class="bg-green-50 p-6 rounded-2xl border-2 border-green-100 text-xl font-medium text-gray-800">${result}</div>`;
+            content.innerHTML = `<div style="text-align:center; padding:40px;"><div class="loader"></div><p style="margin-top:20px; font-weight:900; color: #4a5568; font-size: 20px;">Scouting the tastiest GF food...</p></div>`;
+            modal.style.display = 'flex';
+            
+            const result = await callGemini(`Suggest one amazing and safe Gluten-Free dish Lyra should order at one of these places: ${tripData[idx].gf}. Explain why it's yummy!`);
+            content.innerHTML = `<p>${result}</p>`;
         }
 
-        function closeAIResponse() { document.getElementById('ai-response-modal').classList.add('hidden'); }
-
-        // Settings Logic
-        function toggleSettings() {
-            document.getElementById('settings-modal').classList.toggle('hidden');
+        function closeAIModal() { document.getElementById('ai-modal').style.display = 'none'; }
+        
+        function toggleSettings() { 
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none'; 
         }
-
+        
         function saveApiKey() {
-            const key = document.getElementById('user-api-key').value;
+            const key = document.getElementById('user-api-key').value.trim();
             if (key) {
-                localStorage.setItem('lyra_trip_api_key', key);
+                localStorage.setItem('lyra_trip_key', key);
                 apiKey = key;
-                alert("Key saved! Try the Magic Detailer now.");
                 toggleSettings();
+                message("Settings Saved! Enjoy the magic!");
             }
         }
+        
+        function message(msg) {
+            const m = document.createElement('div');
+            m.style = "position:fixed; top:20px; right:20px; background:#2563eb; color:white; padding:15px 30px; border-radius:15px; font-weight:900; z-index:1000; box-shadow:0 10px 20px rgba(0,0,0,0.2); animation: slideIn 0.5s forwards;";
+            m.innerText = msg;
+            document.body.appendChild(m);
+            setTimeout(() => m.remove(), 3000);
+        }
 
-        // Run it
         window.onload = initSlides;
     </script>
+    <style>
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    </style>
 </body>
 </html>
