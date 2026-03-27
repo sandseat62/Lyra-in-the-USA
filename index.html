@@ -11,15 +11,26 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background: #f0f4f8;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
         }
 
         .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: none;
             opacity: 0;
             transition: opacity 0.4s ease-in-out;
-            width: 100%;
-            height: 100%;
+            overflow-y: auto;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-sizing: border-box;
         }
 
         .slide.active {
@@ -35,6 +46,8 @@
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+            max-width: 1000px;
         }
 
         .btn-hover:hover {
@@ -56,44 +69,60 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Fixed Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
         
-        /* Ensure dynamic content is visible */
-        #dynamic-slides-container {
-            width: 100%;
-            height: 100%;
+        .nav-controls button {
+            pointer-events: auto;
         }
     </style>
 </head>
-<body class="bg-blue-50 h-screen w-screen overflow-hidden">
+<body class="bg-blue-50 h-screen w-screen">
 
     <!-- AI Assistant Button -->
-    <div class="fixed top-6 right-6 z-50">
+    <div class="fixed top-6 right-6 z-[110]">
         <button onclick="toggleAIChat()" class="bg-indigo-600 text-white px-5 py-3 rounded-full shadow-2xl btn-hover flex items-center space-x-2 border-2 border-indigo-400">
             <span>✨ Ask Detroit Expert</span>
         </button>
     </div>
 
     <!-- AI Chat Modal -->
-    <div id="ai-chat" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="glass w-full max-w-lg rounded-3xl p-6 shadow-2xl relative">
+    <div id="ai-chat" class="fixed inset-0 z-[120] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="glass max-w-lg rounded-3xl p-6 shadow-2xl relative">
             <button onclick="toggleAIChat()" class="absolute top-4 right-4 text-gray-400 hover:text-black text-2xl font-bold">✕</button>
             <h2 class="text-2xl font-bold mb-4 flex items-center text-indigo-700">
                 <span class="mr-2">✨</span> Detroit Expert
             </h2>
             <div id="chat-history" class="h-64 overflow-y-auto mb-4 space-y-3 p-4 bg-white/50 rounded-2xl border border-indigo-50">
-                <p class="text-sm italic text-gray-500">Hi Lyra! I'm your AI guide for Detroit and Windsor. Ask me about the cool things we are going to do!</p>
+                <p class="text-sm italic text-gray-500">Hi Lyra! Ask me anything about the tigers, the movie, or our Windsor trip!</p>
             </div>
             <div class="flex space-x-2">
-                <input id="chat-input" type="text" placeholder="Tell me a fun fact about tigers!" class="flex-1 p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none">
+                <input id="chat-input" type="text" placeholder="Tell me a secret about Detroit!" class="flex-1 p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none">
                 <button onclick="sendChatMessage()" class="bg-indigo-600 text-white px-5 py-3 rounded-xl hover:bg-indigo-700">Send</button>
             </div>
         </div>
     </div>
 
+    <!-- Main Presentation Container -->
+    <div id="slides-container" class="relative w-full h-full">
+        <!-- Slides will be injected here -->
+    </div>
+
     <!-- Navigation Control -->
-    <div class="fixed bottom-8 left-0 right-0 z-50 flex flex-col items-center">
+    <div class="nav-controls">
         <div id="slide-indicator" class="mb-3 bg-white/90 px-4 py-1 rounded-full text-xs font-bold text-gray-500 shadow-sm border border-white">
-            Slide 1 of 10
+            Loading Adventure...
         </div>
         <div class="flex space-x-4">
             <button onclick="prevSlide()" class="bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg btn-hover font-bold border-2 border-blue-400 transition-all active:scale-95">← Back</button>
@@ -101,41 +130,14 @@
         </div>
     </div>
 
-    <!-- Main Presentation Wrapper -->
-    <div id="slides-wrapper" class="h-full w-full relative">
-        
-        <!-- Intro Slide (Slide 0) -->
-        <div id="slide-0" class="slide active flex flex-col items-center justify-center bg-gradient-to-br from-blue-700 to-indigo-900 text-white text-center p-6">
-            <div class="max-w-4xl">
-                <h1 class="text-7xl fun-font mb-6 drop-shadow-xl">Hi Lyra!</h1>
-                <p class="text-3xl mb-10 font-light opacity-90">Are you ready for your 2026 Adventure?</p>
-                <div class="flex flex-col items-center space-y-8">
-                    <div class="flex justify-center space-x-12 text-2xl font-bold bg-white/10 p-6 rounded-3xl backdrop-blur-md">
-                        <div class="flex flex-col"><span>🏙️</span><span class="text-sm mt-1 uppercase tracking-tighter">Detroit</span></div>
-                        <div class="flex flex-col"><span>🌉</span><span class="text-sm mt-1 uppercase tracking-tighter">Windsor</span></div>
-                        <div class="flex flex-col"><span>🍕</span><span class="text-sm mt-1 uppercase tracking-tighter">100% GF</span></div>
-                    </div>
-                    <button onclick="speakIntro()" class="bg-white text-indigo-900 px-8 py-4 rounded-full font-black shadow-xl hover:bg-blue-50 transition-all flex items-center space-x-3 btn-hover">
-                        <span>🔊 Play Voice Tour</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- This container will hold Slides 1-9 -->
-        <div id="dynamic-slides-container" class="h-full w-full"></div>
-    </div>
-
-    <!-- AI Magic Result Modal -->
-    <div id="ai-response-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div class="glass w-full max-w-2xl rounded-3xl p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
+    <!-- AI Result Modal -->
+    <div id="ai-response-modal" class="fixed inset-0 z-[130] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="glass max-w-2xl rounded-3xl p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h3 id="ai-title" class="text-3xl font-black text-indigo-800">✨ AI Insight</h3>
                 <button onclick="closeAIResponse()" class="text-gray-400 hover:text-black text-2xl">✕</button>
             </div>
-            <div id="ai-content" class="text-lg text-gray-700 leading-relaxed">
-                <!-- Content injected here -->
-            </div>
+            <div id="ai-content" class="text-lg text-gray-700 leading-relaxed"></div>
             <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end">
                 <button onclick="closeAIResponse()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold">Got it!</button>
             </div>
@@ -144,17 +146,25 @@
 
     <script>
         const apiKey = "";
+        
+        const themeMap = {
+            indigo: { border: 'border-indigo-600', text: 'text-indigo-600', bg: 'bg-indigo-50' },
+            orange: { border: 'border-orange-600', text: 'text-orange-600', bg: 'bg-orange-50' },
+            teal: { border: 'border-teal-600', text: 'text-teal-600', bg: 'bg-teal-50' },
+            pink: { border: 'border-pink-600', text: 'text-pink-600', bg: 'bg-pink-50' },
+            red: { border: 'border-red-600', text: 'text-red-600', bg: 'bg-red-50' },
+            cyan: { border: 'border-cyan-600', text: 'text-cyan-600', bg: 'bg-cyan-50' },
+            yellow: { border: 'border-yellow-600', text: 'text-yellow-600', bg: 'bg-yellow-50' },
+            blue: { border: 'border-blue-600', text: 'text-blue-600', bg: 'bg-blue-50' }
+        };
+
         const tripData = [
             {
                 date: "Thursday, April 2",
                 title: "Detroit Vertical & Victory",
                 bg: "https://images.unsplash.com/photo-1569331527318-912c324df1bc?auto=format&fit=crop&q=80&w=1200",
                 theme: "indigo",
-                activities: [
-                    "🕒 9:00 AM: DYNO Detroit Climbing",
-                    "🕒 4:00 PM: The Yard at Corktown (Games & Cornhole)",
-                    "🕒 7:00 PM: Pistons vs Timberwolves"
-                ],
+                activities: ["🕒 9:00 AM: DYNO Detroit Climbing", "🕒 4:00 PM: The Yard at Corktown", "🕒 7:00 PM: Pistons vs Timberwolves"],
                 gf: "Breakfast: Seven Elements | Lunch: Breadless | Dinner: Mercury Burger"
             },
             {
@@ -162,10 +172,7 @@
                 title: "Opening Day Buzz",
                 bg: "https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&q=80&w=1200",
                 theme: "orange",
-                activities: [
-                    "🕒 1:10 PM: Tigers Opening Day vs. Cardinals",
-                    "🕒 Post-Game: Friday Night Fireworks!"
-                ],
+                activities: ["🕒 1:10 PM: Tigers Opening Day vs. Cardinals", "🕒 Post-Game: Friday Night Fireworks!"],
                 gf: "Breakfast: Hudson Cafe | Lunch: JoJo’s ShakeBAR | Dinner: Union Assembly"
             },
             {
@@ -173,10 +180,7 @@
                 title: "Windsor Wave & Win",
                 bg: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&q=80&w=1200",
                 theme: "teal",
-                activities: [
-                    "🕒 10:00 AM: Adventure Bay Water Park (Indoor!)",
-                    "🕒 3:00 PM: Big Time Entertainment (Karts & Laser Tag)"
-                ],
+                activities: ["🕒 10:00 AM: Adventure Bay Water Park", "🕒 3:00 PM: Big Time Entertainment (Karts & Laser Tag)"],
                 gf: "Breakfast: Germack Roasting | Lunch: Supino Pizzeria | Dinner: Big Time Eats"
             },
             {
@@ -184,10 +188,7 @@
                 title: "Easter Bunny Hop",
                 bg: "https://images.unsplash.com/photo-1522336572018-ed994602f30b?auto=format&fit=crop&q=80&w=1200",
                 theme: "pink",
-                activities: [
-                    "🕒 11:00 AM: Easter Brunch @ JoJo's ShakeBAR",
-                    "🕒 7:20 PM: Tigers Kids Day (Face Painting & Ferris Wheel)"
-                ],
+                activities: ["🕒 11:00 AM: Easter Brunch @ JoJo's", "🕒 7:20 PM: Tigers Kids Day (Ferris Wheel)"],
                 gf: "Brunch: JoJo's | Lunch: Anna's House | Dinner: Comerica Park GF Stand"
             },
             {
@@ -195,10 +196,7 @@
                 title: "Gravity & Cinema",
                 bg: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=1200",
                 theme: "indigo",
-                activities: [
-                    "🕒 1:00 PM: Slick City Action Park (Troy)",
-                    "🕒 6:30 PM: 'Hoppers' Movie @ Emagine Royal Oak"
-                ],
+                activities: ["🕒 1:00 PM: Slick City Action Park", "🕒 6:30 PM: 'Hoppers' Movie @ Emagine"],
                 gf: "Breakfast: Toasted Oak | Lunch: Playa Bowls | Dinner: Condado Tacos"
             },
             {
@@ -206,21 +204,15 @@
                 title: "The Big Bargain Day",
                 bg: "https://images.unsplash.com/photo-1559599101-f09722fb4948?auto=format&fit=crop&q=80&w=1200",
                 theme: "red",
-                activities: [
-                    "🕒 1:00 PM: $5 Movie Matinee ('Hoppers')",
-                    "🕒 6:40 PM: 313 Value Game (Tigers vs. Athletics)"
-                ],
-                gf: "Breakfast: First Watch | Lunch: Shake Shack (GF Buns) | Dinner: Value Hot Dogs"
+                activities: ["🕒 1:00 PM: $5 Movie Matinee", "🕒 6:40 PM: 313 Value Game (Tigers)"],
+                gf: "Breakfast: First Watch | Lunch: Shake Shack (GF) | Dinner: Value Hot Dogs"
             },
             {
                 date: "Wednesday, April 8",
                 title: "Creative Competition",
                 bg: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200",
                 theme: "cyan",
-                activities: [
-                    "🕒 10:00 AM: 2D DIY Studio (Fluid Bear Painting)",
-                    "🕒 3:00 PM: Private Pickleball Courts @ SPARC Novi"
-                ],
+                activities: ["🕒 10:00 AM: 2D DIY Studio", "🕒 3:00 PM: Pickleball @ SPARC Novi"],
                 gf: "Breakfast: Anna's House | Lunch: Playa Bowls | Dinner: Merri Bowl"
             },
             {
@@ -228,10 +220,7 @@
                 title: "Style & Strike",
                 bg: "https://images.unsplash.com/photo-1519340333755-968054813588?auto=format&fit=crop&q=80&w=1200",
                 theme: "yellow",
-                activities: [
-                    "🕒 1:00 PM: Somerset Collection Luxury Shopping",
-                    "🕒 7:00 PM: Night Strike @ Merri Bowl (Unlimited!)"
-                ],
+                activities: ["🕒 1:00 PM: Somerset Collection Shopping", "🕒 7:00 PM: Night Strike @ Merri Bowl"],
                 gf: "Breakfast: Thyme Kitchen | Lunch: The Loose Goose | Dinner: Union Assembly"
             },
             {
@@ -239,11 +228,8 @@
                 title: "Underwater Finale",
                 bg: "https://images.unsplash.com/photo-1540331547168-8b63109225b7?auto=format&fit=crop&q=80&w=1200",
                 theme: "blue",
-                activities: [
-                    "🕒 10:00 AM: SEA LIFE Aquarium (Auburn Hills)",
-                    "🕒 6:45 PM: Party in the Park + Fireworks vs. Marlins"
-                ],
-                gf: "Breakfast: Rainforest Cafe | Lunch: Rise Pies (GF) | Dinner: Union Assembly"
+                activities: ["🕒 10:00 AM: SEA LIFE Aquarium", "🕒 6:45 PM: Party in the Park + Fireworks"],
+                gf: "Breakfast: Rainforest Cafe | Lunch: Rise Pies | Dinner: Union Assembly"
             }
         ];
 
@@ -251,42 +237,61 @@
         const totalSlides = tripData.length + 1;
 
         function initSlides() {
-            const container = document.getElementById('dynamic-slides-container');
-            container.innerHTML = ''; // Clear just in case
+            const container = document.getElementById('slides-container');
             
+            // Intro Slide
+            const intro = document.createElement('div');
+            intro.id = 'slide-0';
+            intro.className = 'slide active bg-gradient-to-br from-blue-700 to-indigo-900 text-white text-center';
+            intro.innerHTML = `
+                <div class="max-w-4xl px-6">
+                    <h1 class="text-7xl fun-font mb-6 drop-shadow-xl">Hi Lyra!</h1>
+                    <p class="text-3xl mb-10 font-light opacity-90">Are you ready for your 2026 Adventure?</p>
+                    <div class="flex flex-col items-center space-y-8">
+                        <div class="flex justify-center space-x-12 text-2xl font-bold bg-white/10 p-6 rounded-3xl backdrop-blur-md">
+                            <div class="flex flex-col"><span>🏙️</span><span class="text-xs mt-1 uppercase tracking-widest">Detroit</span></div>
+                            <div class="flex flex-col"><span>🌉</span><span class="text-xs mt-1 uppercase tracking-widest">Windsor</span></div>
+                            <div class="flex flex-col"><span>🍕</span><span class="text-xs mt-1 uppercase tracking-widest">100% GF</span></div>
+                        </div>
+                        <button onclick="speakIntro()" class="bg-white text-indigo-900 px-8 py-4 rounded-full font-black shadow-xl hover:bg-blue-50 transition-all flex items-center space-x-3 btn-hover">
+                            <span>🔊 Play Voice Tour</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(intro);
+
+            // Daily Slides
             tripData.forEach((day, i) => {
+                const colors = themeMap[day.theme] || themeMap.indigo;
                 const slide = document.createElement('div');
                 slide.id = `slide-${i + 1}`;
-                slide.className = 'slide flex-col items-center justify-center bg-cover bg-center';
+                slide.className = 'slide bg-cover bg-center';
                 slide.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${day.bg}')`;
                 
                 slide.innerHTML = `
-                    <div class="glass max-w-5xl w-[90%] mx-auto rounded-3xl p-10 shadow-2xl border-l-[12px] border-${day.theme}-600">
+                    <div class="glass rounded-3xl p-8 md:p-12 shadow-2xl border-l-[12px] ${colors.border}">
                         <div class="flex justify-between items-start mb-6">
                             <div>
-                                <h2 class="text-${day.theme}-700 text-xl font-black uppercase tracking-widest">${day.date}</h2>
-                                <h1 class="text-6xl font-black text-gray-900 leading-tight">${day.title}</h1>
+                                <h2 class="font-black uppercase tracking-widest ${colors.text} text-xl">${day.date}</h2>
+                                <h1 class="text-4xl md:text-6xl font-black text-gray-900">${day.title}</h1>
                             </div>
-                            <button onclick="speakText('${day.title}. ${day.activities.join('. ')}')" class="p-5 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-all shadow-md">🔊</button>
+                            <button onclick="speakText('${day.title}. ${day.activities.join('. ')}')" class="p-4 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-all shadow-md">🔊</button>
                         </div>
                         <div class="grid md:grid-cols-2 gap-10">
                             <div>
                                 <div class="flex items-center justify-between mb-5">
                                     <h3 class="text-2xl font-bold text-gray-800">The Action Plan</h3>
-                                    <button onclick="getMagicDetail(${i})" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-all">
-                                        ✨ Magic Detailer
-                                    </button>
+                                    <button onclick="getMagicDetail(${i})" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-all">✨ Magic Detailer</button>
                                 </div>
                                 <ul class="space-y-4">
-                                    ${day.activities.map(act => `<li class="flex items-center text-lg text-gray-700 font-medium"><span class="w-2 h-2 bg-${day.theme}-500 rounded-full mr-3"></span>${act}</li>`).join('')}
+                                    ${day.activities.map(act => `<li class="flex items-center text-lg text-gray-700 font-medium"><span class="w-2 h-2 rounded-full mr-3" style="background-color: currentColor"></span>${act}</li>`).join('')}
                                 </ul>
                             </div>
-                            <div class="bg-${day.theme}-50/50 p-8 rounded-3xl border border-${day.theme}-100">
+                            <div class="p-8 rounded-3xl border ${colors.bg}" style="border-width: 1px; border-color: rgba(0,0,0,0.05)">
                                 <div class="flex items-center justify-between mb-5">
-                                    <h3 class="text-2xl font-bold text-${day.theme}-800">Gluten-Free Fuel</h3>
-                                    <button onclick="getMealRec(${i})" class="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200 hover:bg-green-100 transition-all">
-                                        ✨ Menu Scout
-                                    </button>
+                                    <h3 class="text-2xl font-bold text-gray-800">GF Fuel</h3>
+                                    <button onclick="getMealRec(${i})" class="text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full border border-green-200 hover:bg-green-100 transition-all">✨ Menu Scout</button>
                                 </div>
                                 <p class="text-xl text-gray-700 leading-relaxed font-semibold italic">"${day.gf}"</p>
                             </div>
@@ -302,7 +307,9 @@
             if (index < 0) index = totalSlides - 1;
             if (index >= totalSlides) index = 0;
 
-            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const allSlides = document.querySelectorAll('.slide');
+            allSlides.forEach(s => s.classList.remove('active'));
+            
             const target = document.getElementById(`slide-${index}`);
             if (target) {
                 target.classList.add('active');
@@ -329,7 +336,7 @@
             try {
                 const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
                 const data = await response.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Oops, Lyra! I couldn't find that detail. Try again!";
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Oops, I couldn't find that detail.";
             } catch (e) { return "Error connecting to AI."; }
         }
 
@@ -340,8 +347,7 @@
             content.innerHTML = `<div class="p-10 text-center"><div class="loader"></div><p class="mt-4 font-bold text-indigo-600">Digging for hidden gems...</p></div>`;
             modal.classList.remove('hidden');
 
-            const prompt = `Give me one really cool "insider tip" or "hidden secret" for an 11-year-old girl named Lyra for these activities: ${tripData[idx].activities.join(', ')}. Mention a specific thing to look for!`;
-            const result = await callGemini(prompt, "You are a fun, excited travel expert who loves helping kids find the 'secret' fun parts of activities. Keep it short but very detailed.");
+            const result = await callGemini(`Give me one cool secret for Lyra (age 11) about these: ${tripData[idx].activities.join(', ')}.`, "Fun, high-energy travel expert.");
             content.innerHTML = `<div class="bg-indigo-50 p-6 rounded-2xl border-2 border-indigo-100 text-xl font-medium text-gray-800">${result}</div>`;
         }
 
@@ -349,11 +355,10 @@
             const modal = document.getElementById('ai-response-modal');
             const content = document.getElementById('ai-content');
             document.getElementById('ai-title').innerText = "🍕 GF Menu Scout";
-            content.innerHTML = `<div class="p-10 text-center"><div class="loader"></div><p class="mt-4 font-bold text-green-600">Finding the yummiest GF dishes...</p></div>`;
+            content.innerHTML = `<div class="p-10 text-center"><div class="loader"></div><p class="mt-4 font-bold text-green-600">Finding GF yummy things...</p></div>`;
             modal.classList.remove('hidden');
 
-            const prompt = `Based on these restaurants: ${tripData[idx].gf}, suggest the absolute best Gluten-Free dish Lyra (age 11) should order at each one. Explain why it's delicious!`;
-            const result = await callGemini(prompt, "You are a foodie expert specializing in Gluten-Free dining in Detroit and Windsor. Make the food sound amazing and safe.");
+            const result = await callGemini(`Best GF dish at: ${tripData[idx].gf} for Lyra.`, "Gluten-Free foodie expert.");
             content.innerHTML = `<div class="bg-green-50 p-6 rounded-2xl border-2 border-green-100 text-xl font-medium text-gray-800">${result}</div>`;
         }
 
@@ -365,31 +370,23 @@
             const history = document.getElementById('chat-history');
             const val = input.value.trim();
             if(!val) return;
-
-            history.innerHTML += `<div class="text-right"><span class="bg-indigo-100 px-4 py-2 rounded-2xl rounded-tr-none inline-block text-gray-800"><b>You:</b> ${val}</span></div>`;
+            history.innerHTML += `<div class="text-right"><span class="bg-indigo-100 px-4 py-2 rounded-2xl inline-block"><b>You:</b> ${val}</span></div>`;
             input.value = '';
-            
-            const typing = document.createElement('div');
-            typing.innerHTML = `<span class="italic text-gray-400">Expert is thinking...</span>`;
-            history.appendChild(typing);
-            history.scrollTop = history.scrollHeight;
-
-            const res = await callGemini(val, "You are the 'Detroit Expert' guide for Lyra, a detail-oriented 11-year-old. Answer her questions with fun facts, dates, and times from her itinerary if relevant.");
-            history.removeChild(typing);
-            history.innerHTML += `<div><span class="bg-gray-100 px-4 py-2 rounded-2xl rounded-tl-none inline-block text-gray-800 border border-gray-200"><b>Expert:</b> ${res}</span></div>`;
+            const res = await callGemini(val, "Detroit expert for 11-year-old Lyra.");
+            history.innerHTML += `<div><span class="bg-gray-100 px-4 py-2 rounded-2xl inline-block border border-gray-200"><b>Expert:</b> ${res}</span></div>`;
             history.scrollTop = history.scrollHeight;
         }
 
-        // --- TTS MAGIC ---
+        // --- TTS ---
 
         async function speakIntro() {
-            speakText("Hi Lyra! I'm so excited for your trip. We have nine action-packed days planned in Detroit and Windsor. Click the buttons to see each day, and use the Magic Detailer to find secrets about each activity!");
+            speakText("Hi Lyra! Welcome to your Detroit adventure. Click next to see your daily plan!");
         }
 
         async function speakText(text) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
             const payload = {
-                contents: [{ parts: [{ text: `Say this in a very excited and friendly voice for an 11 year old girl: ${text}` }] }],
+                contents: [{ parts: [{ text: `Say this in a friendly voice: ${text}` }] }],
                 generationConfig: {
                     responseModalities: ["AUDIO"],
                     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } } }
@@ -401,9 +398,8 @@
                 const pcmData = result.candidates[0].content.parts[0].inlineData.data;
                 const sampleRate = parseInt(result.candidates[0].content.parts[0].inlineData.mimeType.match(/rate=(\d+)/)?.[1] || "24000");
                 const audioBlob = pcmToWav(pcmData, sampleRate);
-                const audio = new Audio(URL.createObjectURL(audioBlob));
-                audio.play();
-            } catch (e) { console.error("TTS Error", e); }
+                new Audio(URL.createObjectURL(audioBlob)).play();
+            } catch (e) { console.error(e); }
         }
 
         function pcmToWav(base64Pcm, sampleRate) {
@@ -426,7 +422,8 @@
             return new Blob([wavHeader, pcmBuffer], { type: 'audio/wav' });
         }
 
-        initSlides();
+        // Run it
+        window.onload = initSlides;
     </script>
 </body>
 </html>
